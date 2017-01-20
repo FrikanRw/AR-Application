@@ -1,3 +1,5 @@
+Below is the original documentation of the application as provided by the author  at: https://github.com/ezartech/ezar-cities
+
 
 # ezar-cities
 Display cards with city direction and location on a google map view or overlaying an augmented reality view. 

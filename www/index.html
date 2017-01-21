@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Nearby</title>
+    <title>South African Cities</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <meta name="Copyright" content="&copy; 2013, Intel Corporation. All rights reserved." />
     <meta name="Author" content="Rakshith Krishnappa" />
@@ -13,23 +13,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
-    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTVPNw5hr2q67IJJvjou1-B95gIZKy7O4"&callback=initMap"type="text/javascript"></script>
     <script src="lib/jquery/jquery-1.8.2.min.js"></script>
     <script src="cordova.js"></script>
     <script>
+	
+	//Latlng of 13 South African cities via : http://www.latlong.net/place
 var pin = [
-    {"name":"New York", "lat":"40.714353", "lng":"-74.005973"},
-    {"name":"San Francisco", "lat":"37.77493", "lng":"-122.419416"},
-    {"name":"Seattle", "lat":"47.60621", "lng":"-122.332071"},
-    {"name":"Los Angeles", "lat":"34.052234", "lng":"-118.243685"},
-    {"name":"Denver", "lat":"39.737567", "lng":"-104.984718"},
-    {"name":"Chicago", "lat":"41.878114", "lng":"-87.629798"},
-    {"name":"Austin", "lat":"30.267153", "lng":"-97.743061"},
-    {"name":"Miami", "lat":"25.788969", "lng":"-80.226439"},
-    {"name":"Pittsburg", "lat":"40.440625", "lng":"-79.995886"},
-    {"name":"Phoenix", "lat":"33.448377", "lng":"-112.074037"},
-    {"name":"Atlanta", "lat":"33.748995", "lng":"-84.387982"},
-    {"name":"Kansas City", "lat":"39.099727", "lng":"-94.578567"}
+    {"name":"Pretoria", "lat":"-25.731340", "lng":"	28.218370"},
+    {"name":"Cape town", "lat":"-33.918861", "lng":"18.423300"},
+    {"name":"Durban", "lat":"-33.832500", "lng":"18.647499"},
+    {"name":"Johannesburg", "lat":"-26.195246", "lng":"28.034088"},
+    {"name":"Kimberley", "lat":"-28.741943", "lng":"24.771944"},
+    {"name":"Port Elizabeth", "lat":"-33.991360", "lng":"25.656912"},
+    {"name":"Nelspruit", "lat":"-25.474360", "lng":"30.971661"},
+    {"name":"Emalahleni ", "lat":"-25.872782", "lng":"29.255323"},
+    {"name":"Bloemfontein", "lat":"-29.085214", "lng":"26.159576"},
+    {"name":"George", "lat":"-33.988128", "lng":"22.452988"},
+    {"name":"Richards Bay", "lat":"-28.780728", "lng":"32.038286"},
+    {"name":"Mafikeng", "lat":"-25.855978", "lng":"25.640310"},
+	{"name":"Polokwane", "lat":"-23.896171", "lng":"29.448626"}
 ];        
 var markersArray = [], bounds;
 var myLat = 0, myLng = 0; 

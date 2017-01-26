@@ -14,4 +14,4 @@ F 1.01
 Working after update to 2.10 EzAr
 *above bugs have been solved*
 Converted Haversine formula to calc kilometers
-Corrected display to     
+Corrected display to calculate on kilometers   

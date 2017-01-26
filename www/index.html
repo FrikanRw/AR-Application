@@ -146,7 +146,7 @@ function relativePosition(i){
     //‘haversine’ formula
     var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    distance = 6371 c; // distance in kilometers
+    distance = 6371 * c; // distance in kilometers
     pin[i]['distance'] = distance;
 }
 // calculate direction of points and display        
@@ -157,11 +157,11 @@ function calculateDirection(degree){
         if(Math.abs(pin[i].bearing - degree) <= 20){
             var away, fontSize, fontColor;
             // varry font size based on distance from gps location
-            if(pin[i].distance>1500){
+            if(pin[i].distance>2414.016){
                 away = Math.round(pin[i].distance);
                 fontSize = "16";
                 fontColor = "#ccc";
-            } else if(pin[i].distance>500){
+            } else if(pin[i].distance>804.672){
                 away = Math.round(pin[i].distance);
                 fontSize = "24";
                 fontColor = "#ddd";

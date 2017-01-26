@@ -28,4 +28,5 @@
     <plugin name="cordova-plugin-device-motion" spec="~1.2.2" />
     <plugin name="cordova-plugin-geolocation" spec="~2.3.0" />
     <plugin name="com.ezartech.ezar.snapshot" spec="../../plugins/com.ezartech.ezar.snapshot" />
+	<preference name="Fullscreen" value="true" />
 </widget>

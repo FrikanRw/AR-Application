@@ -10,7 +10,7 @@
  * Please see http://software.intel.com/html5/license/samples 
  * and the included README.md file for license terms and conditions.
 -->      
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width,>
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTVPNw5hr2q67IJJvjou1-B95gIZKy7O4"&callback=initMap"type="text/javascript"></script>
@@ -54,6 +54,7 @@ function onDeviceReady() {
     startAccelerometer();
     startCompass();
     startGeolocation();
+	document.getElementById("watchPosition").addEventListener("click", watchPosition);
 }
 
 function startCamera() {
@@ -288,8 +289,36 @@ function onAccelerometerError() {
                     document.getElementById("snapbtn").style.display = "block";
                 },
                 {"saveToPhotoAlbum":true}
-            )}, 10);
-    } 
+            )}, 10);}
+    
+//functions to produce GPS stats
+function watchPosition() {
+
+   var options = {
+      maximumAge: 3600000,
+      timeout: 3000,
+      enableHighAccuracy: true,
+   }
+
+   var watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
+
+   function onSuccess(position) {
+
+      alert('Latitude: '          + position.coords.latitude          + '\n' +
+         'Longitude: '         + position.coords.longitude         + '\n' +
+         'Altitude: '          + position.coords.altitude          + '\n' +
+         'Accuracy: '          + position.coords.accuracy          + '\n' +
+         'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+         'Heading: '           + position.coords.heading           + '\n' +
+         'Timestamp: '         + position.timestamp                + '\n');
+   };
+
+   function onError(error) {
+      alert('code: '    + error.code    + '\n' +'message: ' + error.message + '\n');
+   }
+
+};
+	document.getElementById("watchPosition").addEventListener("click", watchPosition);
     </script>
     <style>
 body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none;}
@@ -316,6 +345,12 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
 .heading {background-color:#999;color:#eee;padding:5px;}
 #compass, #accelerometer, #geolocation {padding:5px}
 
+.watchPosition{
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+}
+
 .snap {
     position: absolute;
     right: 31px;
@@ -339,6 +374,9 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
         <div id="direction"></div>
         <br>
         <div id="spot"></div>
+		<div class="watchPosition" onclick="watchPosition()">
+			<img id="watchbtn" src="img/phonegear_btn.png">
+		</div>   
         <div class="snap" onclick="doSnapshot()">
     		<img id="snapbtn" src="img/camera_btn.png">
     	</div>

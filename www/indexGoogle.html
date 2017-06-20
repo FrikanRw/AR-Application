@@ -2,15 +2,18 @@
 <html>
   <head>
     <title>South African Cities</title>
-
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="Copyright" content="&copy; 2013, Intel Corporation. All rights reserved." />
+    <meta name="Author" content="Rakshith Krishnappa" />
+<!--
+ * Copyright (c) 2013, Intel Corporation. All rights reserved.
+ * Please see http://software.intel.com/html5/license/samples 
+ * and the included README.md file for license terms and conditions.
+-->      
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-	<link rel="stylesheet" href="js/leaflet.css" />
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTVPNw5hr2q67IJJvjou1-B95gIZKy7O4"&callback=initMap"type="text/javascript"></script>
-	<script src="js/leaflet.js"></script>
-	integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
-	crossorigin=""></script>
     <script src="lib/jquery/jquery-1.8.2.min.js"></script>
     <script src="cordova.js"></script>
     <script>
@@ -44,14 +47,14 @@ function onDeviceReady() {
 
     //navigator.splashscreen.hide();
     startCamera();
+
     setupMap();
 
     // start cordova device sensors
     startAccelerometer();
     startCompass();
     startGeolocation();
-	
-	
+	document.getElementById("watchPosition").addEventListener("click", watchPosition);
 }
 
 function startCamera() {
@@ -65,26 +68,29 @@ function startCamera() {
 }  
 
 
-// setup leaflet maps api        
+// setup google maps api        
 function setupMap(){
-    
-    var map = L.map('map',{
-	centre: [-25.767078, 28.265762] }).fitWorld();
-	var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	maxZoom: 19,
-	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	}).addTo(map);
-	map.locate({setView: true, maxZoom: 16});
-	
+    $("#map").height($(window).height()-60);
+    var mapOptions = {
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        navigationControl: true,
+        scrollwheel: false,
+        navigationControlOptions: {style: google.maps.NavigationControlStyle.SMALL},
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
 }        
 // toggle between list view and map view        
 function toggleView(){
     if($(".listView").is(":visible")){
         $(".listView").hide();
+        $("#map").height($(window).height()-60);
         $(".mapView").fadeIn(
             function(){
-                map.fitBounds(bounds);
-                });
+                google.maps.event.trigger(map, "resize");
+                map.fitBounds(bounds);});
         $("#viewbtn").html("List");
     } else {
         $(".mapView").hide();
@@ -96,14 +102,10 @@ function toggleView(){
 function loadData(){
     dataStatus = "loading";
     markersArray = [];
-    bounds = new L.LatLngBounds();
+    bounds = new google.maps.LatLngBounds();
     // add blue gps marker
-    var icon = new L.icon({
-	iconUrl:'http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',
-	iconSize:     [30, 28],
-	iconAnchor:   [22, 94],
-	});
-	var gpsMarker = new L.Marker([new L.LatLng(myLat, myLng)], {icon:icon, title:'My position'}).addTo(map);
+    var icon = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
+    var gpsMarker = new google.maps.Marker({position: new google.maps.LatLng(myLat, myLng), map: map, title: "My Position", icon:icon});
     bounds.extend(new google.maps.LatLng(myLat, myLng));
     markersArray.push(gpsMarker);
     // add all location markers to map and list view and array
@@ -316,10 +318,10 @@ function watchPosition() {
    }
 
 };
-	
+	document.getElementById("watchPosition").addEventListener("click", watchPosition);
     </script>
     <style>
-body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none;padding: 0;}
+body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none;}
 .navbar {background-color:#222;height:40px;padding:10px;text-align:center;color:#fff;font-size:20px;font-weight:bold;line-height:40px;}
 .navtitle {text-align:center;margin:auto}
 .navbtn {background-color:#333;padding:5px 10px;height:30px;color:#fff;font-size:18px;font-weight:bold;line-height:30px;border-radius:4px;border:1px solid #666} 
@@ -330,7 +332,7 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
 .searchbox {padding:5px;background-color:#eee;border-bottom:1px solid #fff;}
 #search {box-sizing: border-box;width:100%;height:40px;font-size:16px;border-radius:20px;border:1px solid #bbb}
 .mapView {display:none}
-#map {height:100vh;}
+#map {height:200px;}
 #arView, #topView {display:none;}
 #arView{padding:30px 0; height:70px;text-align:center}
 .arMessage {color:#ddd;font-size:14px}
@@ -348,10 +350,6 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
     left: 10px;
     bottom: 10px;
 }
-
-    html, body, #map {
-            height: 100%;
- }
 
 .snap {
     position: absolute;

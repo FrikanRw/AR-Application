@@ -3,19 +3,14 @@
   <head>
     <title>South African Cities</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <meta name="Copyright" content="&copy; 2013, Intel Corporation. All rights reserved." />
-    <meta name="Author" content="Rakshith Krishnappa" />
-<!--
- * Copyright (c) 2013, Intel Corporation. All rights reserved.
- * Please see http://software.intel.com/html5/license/samples 
- * and the included README.md file for license terms and conditions.
--->      
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; media-src *; img-src *; script-src * 'unsafe-inline' 'unsafe-eval'">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTVPNw5hr2q67IJJvjou1-B95gIZKy7O4"&callback=initMap"type="text/javascript"></script>
-    <script src="lib/jquery/jquery-1.8.2.min.js"></script>
-    <script src="cordova.js"></script>
+	<link rel="stylesheet" href="js/leaflet.css" />   
+    <script src="lib/jquery/jquery-3.2.1.min.js"></script>
+	 <script src="cordova.js"></script>
+	<script src="js/leaflet.js"></script>
+	<script src="js/gserve.js"></script>
     <script>
 	
 	//Latlng of 13 South African cities via : http://www.latlong.net/place
@@ -42,19 +37,19 @@ var dataStatus = 0;
 $( document ).ready(function() {
     document.addEventListener("deviceready", onDeviceReady, false);
 });
+$.support.cors=true;
 // start device compass, accelerometer and geolocation after deviceready        
 function onDeviceReady() {
 
     //navigator.splashscreen.hide();
+	// start cordova device sensors
     startCamera();
-
+	startGeolocation();    
+	startAccelerometer();
+    startCompass();
     setupMap();
 
-    // start cordova device sensors
-    startAccelerometer();
-    startCompass();
-    startGeolocation();
-	document.getElementById("watchPosition").addEventListener("click", watchPosition);
+	//document.getElementById("watchPosition").addEventListener("click", watchPosition);
 }
 
 function startCamera() {
@@ -68,20 +63,53 @@ function startCamera() {
 }  
 
 
-// setup google maps api        
+//  
+// setup leaflet maps api         
 function setupMap(){
     $("#map").height($(window).height()-60);
-    var mapOptions = {
-        zoom: 13,
-        mapTypeControl: false,
-        streetViewControl: false,
-        navigationControl: true,
-        scrollwheel: false,
-        navigationControlOptions: {style: google.maps.NavigationControlStyle.SMALL},
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    map = new google.maps.Map(document.getElementById("map"), mapOptions);
-}        
+    map = new L.Map(document.getElementById('map'));
+	
+	
+	var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+	
+
+    //Load Dwellings GeoJson from Geoserver
+    var geoJsonUrl ="http://41.185.27.219:8080/geoserver/mapchasers/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=mapchasers:dwellings&outputFormat=text/javascript&format_options=callback:JsonDwelling";
+
+    $.ajax({
+        jsonp : false,
+        url: geoJsonUrl,
+        dataType: 'jsonp',
+        jsonpCallback: 'JsonDwelling',
+        success: handleJson
+    });
+
+    function handleJson(data) {
+        L.geoJson(data, {
+            onEachFeature: function (feature, my_Layer) {
+						        my_Layer.bindPopup('<b><center>DWELLING INFORMATION</b>'+ '<center> Coordinates:' +feature.geometry.coordinates + '<center> Primary Address:' +feature.properties.priadd + '<center> Secondary Address: ' + feature.properties.secadd + '<center> Tertiery Address: ' + feature.properties.teradd);
+					  },
+            pointToLayer: function (feature, latlng) {
+            
+			     return L.circleMarker(latlng, {radius: 4,
+                    fillColor: "#b3b3cc",
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 1}
+          );
+            //return L.marker(latlng);
+        }
+        }).addTo(map);
+    }
+		
+	};
+
+
+      
 // toggle between list view and map view        
 function toggleView(){
     if($(".listView").is(":visible")){
@@ -89,8 +117,9 @@ function toggleView(){
         $("#map").height($(window).height()-60);
         $(".mapView").fadeIn(
             function(){
-                google.maps.event.trigger(map, "resize");
-                map.fitBounds(bounds);});
+				map.on('resize', map);
+				map.fitBounds(bounds);
+				});
         $("#viewbtn").html("List");
     } else {
         $(".mapView").hide();
@@ -102,11 +131,20 @@ function toggleView(){
 function loadData(){
     dataStatus = "loading";
     markersArray = [];
-    bounds = new google.maps.LatLngBounds();
+    bounds = new L.latLngBounds();
     // add blue gps marker
-    var icon = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
-    var gpsMarker = new google.maps.Marker({position: new google.maps.LatLng(myLat, myLng), map: map, title: "My Position", icon:icon});
-    bounds.extend(new google.maps.LatLng(myLat, myLng));
+    var Bicon = new L.icon({
+	iconUrl:'http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',
+	iconSize:     [30, 28],
+	iconAnchor:   [22, 94],
+	});
+	
+
+	
+    /*var gpsMarker = new L.Marker([new L.LatLng(myLat, myLng)], {icon:icon}).addTo(map);*/
+	myLatLng =new L.latLng(myLat,myLng)
+	var gpsMarker = new L.Marker(myLatLng, {icon:Bicon}).addTo(map);
+	bounds.extend(myLatLng);
     markersArray.push(gpsMarker);
     // add all location markers to map and list view and array
     for(var i=0; i< pin.length; i++){
@@ -115,13 +153,18 @@ function loadData(){
         relativePosition(i);
     }
     map.fitBounds(bounds);
-    google.maps.event.trigger(map, "resize");
+    map.on('resize' , map );
     dataStatus = "loaded";   
 }
 // add marker to map and in array        
 function addMarker(i){
-	var marker = new google.maps.Marker({position: new google.maps.LatLng(pin[i].lat, pin[i].lng), map: map, title: pin[i].name});
-	bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
+	
+	var Ricon = new L.icon({
+	iconUrl:'http://www.google.com/mapfiles/marker.png',
+		});
+	
+    var marker = new L.Marker(new L.LatLng(pin[i].lat, pin[i].lng) ).addTo(map);
+	bounds.extend(new L.LatLng(pin[i].lat, pin[i].lng));
 	markersArray.push(marker);
 } 
 // clear all markers from map and array        
@@ -294,34 +337,39 @@ function onAccelerometerError() {
 //functions to produce GPS stats
 function watchPosition() {
 
-   var options = {
+   var Woptions = {
       maximumAge: 3600000,
       timeout: 3000,
       enableHighAccuracy: true,
    }
 
-   var watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
+   var watchID = navigator.geolocation.watchPosition(onSuccess, onError, Woptions);
 
    function onSuccess(position) {
 
-      alert('Latitude: '          + position.coords.latitude          + '\n' +
+      alert('Latitude: '       + position.coords.latitude          + '\n' +
          'Longitude: '         + position.coords.longitude         + '\n' +
          'Altitude: '          + position.coords.altitude          + '\n' +
          'Accuracy: '          + position.coords.accuracy          + '\n' +
          'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
          'Heading: '           + position.coords.heading           + '\n' +
          'Timestamp: '         + position.timestamp                + '\n');
+		 
+
+ };
+		 
    };
 
    function onError(error) {
       alert('code: '    + error.code    + '\n' +'message: ' + error.message + '\n');
    }
 
-};
-	document.getElementById("watchPosition").addEventListener("click", watchPosition);
+
+	//document.getElementById("watchPosition").addEventListener("click", watchPosition);
+	
     </script>
-    <style>
-body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none;}
+ 	<style>
+body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none; padding:0;}
 .navbar {background-color:#222;height:40px;padding:10px;text-align:center;color:#fff;font-size:20px;font-weight:bold;line-height:40px;}
 .navtitle {text-align:center;margin:auto}
 .navbtn {background-color:#333;padding:5px 10px;height:30px;color:#fff;font-size:18px;font-weight:bold;line-height:30px;border-radius:4px;border:1px solid #666} 
@@ -331,9 +379,7 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
 .item {padding:20px 10px; background-color:#eee;border-bottom:1px solid #fff;font-size:18px;color:#333;text-shadow:0 1px #fff}
 .searchbox {padding:5px;background-color:#eee;border-bottom:1px solid #fff;}
 #search {box-sizing: border-box;width:100%;height:40px;font-size:16px;border-radius:20px;border:1px solid #bbb}
-.mapView {display:none}
-#map {height:200px;}
-#arView, #topView {display:none;}
+#arView{display:none;}
 #arView{padding:30px 0; height:70px;text-align:center}
 .arMessage {color:#ddd;font-size:14px}
 #spot {text-align:center}
@@ -362,6 +408,15 @@ body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;
     position: absolute;
     right: 10px;
     bottom: 10px;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+html, body, #map {
+    height: 100vh;
+    width: 100vw;
 }
     </style>
   </head>

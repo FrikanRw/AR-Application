@@ -1,0 +1,34 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "com.ezartech.ezar.snapshot": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        },
+        "com.ezartech.ezar.videooverlay": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        },
+        "cordova-plugin-device-motion": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        },
+        "cordova-plugin-device-orientation": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        }
+    },
+    "dependent_plugins": {
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "com.ezartech.demo.cities"
+        }
+    }
+}

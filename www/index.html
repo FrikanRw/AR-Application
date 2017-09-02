@@ -6,35 +6,38 @@
 	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; media-src *; img-src *; script-src * 'unsafe-inline' 'unsafe-eval'">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-	<link rel="stylesheet" href="js/leaflet.css" />   
+	<link rel="stylesheet" href="js/leaflet.css" />
     <script src="lib/jquery/jquery-3.2.1.min.js"></script>
 	 <script src="cordova.js"></script>
 	<script src="js/leaflet.js"></script>
 	<script src="js/gserve.js"></script>
     <script>
-	
-	
-var pin = [{"PrimaryAddress":"Alaska", "lat":"-25.730929", "lng":"28.444864"}];        
+
+
+//var pin = [{"PrimaryAddress":"Alaska", "lat":"-25.730929", "lng":"28.444864"}];
+var pin = [{"Name":"Campus", "lat":"-25.754516", "lng":"28.231509"}];
+
+
 var markersArray = [], bounds;
-var myLat = 0, myLng = 0; 
+var myLat = 0, myLng = 0;
 var bearing, distance;
-var dataStatus = 0;                
-// setup map and listen to deviceready        
+var dataStatus = 0;
+// setup map and listen to deviceready
 $( document ).ready(function() {
     document.addEventListener("deviceready", onDeviceReady, false);
 });
 $.support.cors=true;
-// start device compass, accelerometer and geolocation after deviceready        
+// start device compass, accelerometer and geolocation after deviceready
 function onDeviceReady() {
 
-    //navigator.splashscreen.hide();
-	// start cordova device sensors
+     //navigator.splashscreen.hide();
+	   // start cordova device sensors
     startCamera();
-	startGeolocation();    
-	startAccelerometer();
+  	startGeolocation();
+  	startAccelerometer();
     startCompass();
     setupMap();
-	
+
 
 	//document.getElementById("watchPosition").addEventListener("click", watchPosition);
 }
@@ -47,46 +50,50 @@ function startCamera() {
         function(error) {
             alert("ezar initialization failed");
         });
-}  
+}
 
 
-//  
-// setup leaflet maps api         
+//
+// setup leaflet maps api
 function setupMap(){
     $("#map").height($(window).height()-60);
     map = new L.Map(document.getElementById('map'));
-	
-	
+
+
 	var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	maxZoom: 19,
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
-	
+
 
     //Load Dwellings GeoJson from Geoserver
-     var geoJsonUrl="http://frikancarto.co.za:8080/geoserver/viva/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=viva:dwellings&outputFormat=text%2Fjavascript&format_options=callback:JsonDwelling"
-    
+     //var geoJsonUrl="http://frikancarto.co.za:8080/geoserver/viva/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=viva:dwellings&outputFormat=text%2Fjavascript&format_options=callback:handleJson"
+    var geoJsonUrl="http://frikancarto.co.za:8080/geoserver/viva/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=viva:CampusData&outputFormat=text%2Fjavascript&format_options=callback:handleJson"
 	$.ajax({
-		
+
         jsonp : false,
         url: geoJsonUrl,
         dataType: 'jsonp',
-        jsonpCallback: 'JsonDwelling',
+        jsonpCallback: 'handleJson',
         success: handleJson
     });
 
     function handleJson(data) {
-		
+
        L.geoJson(data, {
-			
+
             onEachFeature: function (feature, my_Layer) {
-						       						
-								my_Layer.bindPopup('<b><center>DWELLING INFORMATION</b>'+ '<center> Coordinates:' +feature.geometry.coordinates + '<center> Primary Address:' +feature.properties.priadd + '<center> Secondary Address: ' + feature.properties.secadd + '<center> Tertiery Address: ' + feature.properties.teradd);
-								//console.log(feature.geometry.coordinates[0].toString());
-								pin.push({"PrimaryAddress":feature.properties.priadd, "lat":feature.geometry.coordinates[1].toString(), "lng":feature.geometry.coordinates[0].toString()});
+
+								//my_Layer.bindPopup('<b><center>DWELLING INFORMATION</b>'+ '<center> Coordinates:' +feature.geometry.coordinates + '<center> Primary Address:' +feature.properties.priadd + '<center> Secondary Address: ' + feature.properties.secadd + '<center> Tertiery Address: ' + feature.properties.teradd);
+                my_Layer.bindPopup('<b><center>DWELLING INFORMATION</b>'+ '<center> Coordinates:' +feature.geometry.coordinates + '<center> Name:' +feature.properties.name;
+                //console.log(feature.geometry.coordinates[0].toString());
+                //Alaska to AR
+                //pin.push({"PrimaryAddress":feature.properties.priadd, "lat":feature.geometry.coordinates[1].toString(), "lng":feature.geometry.coordinates[0].toString()});
+                //Campus to AR
+                pin.push({"Name":feature.properties.name, "lat":feature.geometry.coordinates[1].toString(), "lng":feature.geometry.coordinates[0].toString()});
 					  },
             pointToLayer: function (feature, latlng) {
-            
+
 			     return L.circleMarker(latlng, {radius: 4,
                     fillColor: "#b3b3cc",
                     color: "#000",
@@ -97,13 +104,11 @@ function setupMap(){
             //return L.marker(latlng);
         }
         }).addTo(map);
-    }
-		
-	};
+    };
 
 
-      
-// toggle between list view and map view        
+
+// toggle between list view and map view
 function toggleView(){
     if($(".listView").is(":visible")){
         $(".listView").hide();
@@ -124,7 +129,7 @@ function toggleView(){
 
 
 
-// get data from API and store in array, add to list view and create markers on map, calculate         
+// get data from API and store in array, add to list view and create markers on map, calculate
 function loadData(){
     dataStatus = "loading";
     markersArray = [];
@@ -135,7 +140,7 @@ function loadData(){
 	iconSize:     [30, 28],
 	iconAnchor:   [22, 94],
 	});
-	
+
     /*var gpsMarker = new L.Marker([new L.LatLng(myLat, myLng)], {icon:icon}).addTo(map);*/
 	myLatLng =new L.latLng(myLat,myLng)
 	var gpsMarker = new L.Marker(myLatLng, {icon:Bicon}).addTo(map);
@@ -144,34 +149,36 @@ function loadData(){
     // add all location markers to map and list view and array
     for(var i=0; i< pin.length; i++){
 		//console.log(pin[i].lat);
-        $(".listItems").append("<div class='item'>"+pin[i].PrimaryAddress+"</div>");
+        //$(".listItems").append("<div class='item'>"+pin[i].PrimaryAddress+"</div>");
+    //Campus
+        $(".listItems").append("<div class='item'>"+pin[i].name+"</div>");
         addMarker(i);
         relativePosition(i);
     }
     map.fitBounds(bounds);
     map.on('resize' , map );
-    dataStatus = "loaded";   
+    dataStatus = "loaded";
 }
 
-// add marker to map and in array        
+// add marker to map and in array
 function addMarker(i){
-	
+
 
 	var Ricon = new L.icon({
 	iconUrl:'http://www.google.com/mapfiles/marker.png',
 		});
-	
+
     var marker = new L.Marker(new L.LatLng(pin[i].lat, pin[i].lng) ).addTo(map);
 	bounds.extend(new L.LatLng(pin[i].lat, pin[i].lng));
 	markersArray.push(marker);
-} 
-// clear all markers from map and array        
+}
+// clear all markers from map and array
 function clearMarkers() {
 	while (markersArray.length) {
 		markersArray.pop().setMap(null);
 	}
-}        
-// calulate distance and bearing value for each of the points wrt gps lat/lng        
+}
+// calulate distance and bearing value for each of the points wrt gps lat/lng
 function relativePosition(i){
     var pinLat = pin[i].lat;
     var pinLng = pin[i].lng;
@@ -184,14 +191,14 @@ function relativePosition(i){
     bearing = Math.atan2(y, x) * 180 / Math.PI;
     bearing = bearing + 180;
     pin[i]['bearing'] = bearing;
-	
+
     //‘haversine’ formula
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     distance = 6371 * c; // distance in kilometers
     pin[i]['distance'] = distance;
 }
-// calculate direction of points and display        
+// calculate direction of points and display
 function calculateDirection(degree){
     var detected = 0;
     $("#spot").html("");
@@ -220,15 +227,15 @@ function calculateDirection(degree){
             }
         }
     }
-    
-} 
-        
-// Start watching the geolocation        
+
+}
+
+// Start watching the geolocation
 function startGeolocation(){
     var options = { timeout: 30000 };
     watchGeoID = navigator.geolocation.watchPosition(onGeoSuccess, onGeoError, options);
 }
-        
+
 // Stop watching the geolocation
 function stopGeolocation() {
     if (watchGeoID) {
@@ -236,7 +243,7 @@ function stopGeolocation() {
         watchGeoID = null;
     }
 }
-        
+
 // onSuccess: Get the current location
 function onGeoSuccess(position) {
     document.getElementById('geolocation').innerHTML = 'Latitude: ' + position.coords.latitude + '<br />' + 'Longitude: ' + position.coords.longitude;
@@ -249,8 +256,8 @@ function onGeoSuccess(position) {
 // onError: Failed to get the location
 function onGeoError() {
     document.getElementById('log').innerHTML += "onError=.";
-} 
-    
+}
+
 // Start watching the compass
 function startCompass() {
     var options = { frequency: 100 };
@@ -277,8 +284,8 @@ function onCompassSuccess(heading) {
 // onError: Failed to get the heading
 function onCompassError(compassError) {
     document.getElementById('log').innerHTML += "onError=."+compassError.code;
-}        
-        
+}
+
 // Start checking the accelerometer
 function startAccelerometer() {
     var options = { frequency: 100 };
@@ -317,26 +324,26 @@ function onAccelerometerError() {
  function doSnapshot() {
         //hide snapbtn so it will not be in snapshot image
         document.getElementById("snapbtn").style.display = "none";
-        
+
         //give dom chance to hide snapbtn before image capture
-        setTimeout( function() { 
-            ezar.snapshot(  
+        setTimeout( function() {
+            ezar.snapshot(
                 function(data) {
                     alert("Snapshot complete.\nSee Gallery for image");
                     document.getElementById("snapbtn").style.display = "block";
-                }, 
+                },
                 function(err) {
                     alert("Error: " + err);
                     document.getElementById("snapbtn").style.display = "block";
                 },
                 {"saveToPhotoAlbum":true}
             )}, 10);}
-			
-// new search function        
 
-	
-	
- 
+// new search function
+
+
+
+
 
 /*function searchData(){
     q = $("#search").val();
@@ -346,16 +353,16 @@ function onAccelerometerError() {
     for(var i=0; i< pin.length; i++){
 		//console.log(pin[i].lat);
 		if (pin[i].PrimaryAddress =q){
-		
+
         $(".listItems").append("<div class='item'>"+pin[i].PrimaryAddress+"</div>");
         addMarker(i);
         relativePosition(i);
-    
+
     map.fitBounds(bounds);
     map.on('resize' , map );
-    dataStatus = "loaded";  
+    dataStatus = "loaded";
 	} else {
-	} 
+	}
 	}
 }*/
 //functions to produce GPS stats
@@ -378,10 +385,10 @@ function watchPosition() {
          'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
          'Heading: '           + position.coords.heading           + '\n' +
          'Timestamp: '         + position.timestamp                + '\n');
-		 
+
 
  };
-		 
+
    };
 
    function onError(error) {
@@ -390,13 +397,13 @@ function watchPosition() {
 
 
 	//document.getElementById("watchPosition").addEventListener("click", watchPosition);
-	
+
     </script>
  	<style>
 body {background-color:transparent;font-family:Arial;margin:0;overflow-x:hidden;-webkit-user-select: none; padding:0;}
 .navbar {background-color:#222;height:40px;padding:10px;text-align:center;color:#fff;font-size:20px;font-weight:bold;line-height:40px;}
 .navtitle {text-align:center;margin:auto}
-.navbtn {background-color:#333;padding:5px 10px;height:30px;color:#fff;font-size:18px;font-weight:bold;line-height:30px;border-radius:4px;border:1px solid #666} 
+.navbtn {background-color:#333;padding:5px 10px;height:30px;color:#fff;font-size:18px;font-weight:bold;line-height:30px;border-radius:4px;border:1px solid #666}
 #actionbtn {float:right;}
 #viewbtn {float:left;}
 .query {padding:10px;background-color:#aaa;border-bottom:1px solid #fff;font-size:14px;font-weight:bold;color:#222;}
@@ -444,7 +451,7 @@ html, body, #map {
 }
     </style>
   </head>
-  <body id="body" style="background-color: transparent">  
+  <body id="body" style="background-color: transparent">
     <div id="arView" style="background-color: transparent">
         <div class="arMessage">&uarr;<br>Tilt down to see all places</div>
         <br>
@@ -455,7 +462,7 @@ html, body, #map {
         <div id="spot"></div>
 		<div class="watchPosition" onclick="watchPosition()">
 			<img id="watchbtn" src="img/phonegear_btn.png">
-		</div>   
+		</div>
         <div class="snap" onclick="doSnapshot()">
     		<img id="snapbtn" src="img/camera_btn.png">
     	</div>
@@ -466,8 +473,8 @@ html, body, #map {
     <div id="topView" style="background-color: white">
         <div class="navbar">
             <div id="actionbtn" class="navbtn" onclick="loadData()"> &#8634;</div>
-            <div id="viewbtn" class="navbtn" onclick="toggleView()">Map</div>    
-            <div class="navtitle">Nearby</div> 
+            <div id="viewbtn" class="navbtn" onclick="toggleView()">Map</div>
+            <div class="navtitle">Nearby</div>
         </div>
         <div class="listView">
 			<div class="searchbox"><input id="search" type="text" placeholder="Search Primary Address"  onKeyPress='if ((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13)) {searchData()} else return true;'></div>
@@ -477,7 +484,7 @@ html, body, #map {
             <div id="map"></div>
         </div>
     </div>
-    <div id="debug">  
+    <div id="debug">
         <div class="heading">Geolocation</div>
         <div id="geolocation"></div>
         <div class="heading">Compass</div>
@@ -486,6 +493,6 @@ html, body, #map {
         <div id="accelerometer"></div>
         <div class="heading">Log</div>
         <div id="log"></div>
-    </div>      
+    </div>
   </body>
 </html>
